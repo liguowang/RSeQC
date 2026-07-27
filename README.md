@@ -1,5 +1,11 @@
 # RSeQC
 
+[![PyPI version](https://img.shields.io/pypi/v/RSeQC.svg)](https://pypi.org/project/RSeQC/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/RSeQC.svg)](https://pypi.org/project/RSeQC/)
+[![License](https://img.shields.io/github/license/liguowang/RSeQC)](LICENSE)
+[![GitHub Actions](https://github.com/liguowang/RSeQC/actions/workflows/ci.yml/badge.svg)](https://github.com/liguowang/RSeQC/actions/workflows/ci.yml)
+[![PyPI Downloads](https://static.pepy.tech/badge/rseqc)](https://pepy.tech/projects/rseqc)
+
 ## Requirements
 
 - Python 3.9 or later
@@ -53,7 +59,7 @@ rseqc_env\Scripts\Activate.ps1
 
 ## Install RSeQC
 
-### Install the latest stable release from PyPI
+### Install the latest stable release from [PyPI](https://pypi.org/project/RSeQC/5.0.5/)
 
 ```bash
 pip install rseqc
