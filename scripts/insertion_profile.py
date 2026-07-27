@@ -1,0 +1,202 @@
+#!/usr/bin/env python3
+
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2010–2026 Liguo Wang
+
+"""Calculate the distribution of inserted nucleotides across RNA-seq reads."""
+
+from __future__ import annotations
+import argparse
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from typing import Sequence
+from qcmodule import SAM
+
+
+__author__ = "Liguo Wang"
+__version__ = "5.05"
+
+
+DESCRIPTION = (
+    "Calculate the positional distribution of inserted nucleotides from "
+    "CIGAR insertion (I) operations in a SAM/BAM alignment file."
+)
+
+EPILOG = """
+Examples
+--------
+Single-end data:
+    insertion_profile.py -i sample.bam -o sample -s SE
+
+Paired-end data:
+    insertion_profile.py -i sample.bam -o sample -s PE
+
+Generate profile data without running R:
+    insertion_profile.py -i sample.bam -o sample -s PE --skip-plot
+"""
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Create and configure the command-line parser."""
+    parser = argparse.ArgumentParser(
+        description=DESCRIPTION,
+        epilog=EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument(
+        "-i",
+        "--input-file",
+        required=True,
+        type=Path,
+        help="Input alignment file in BAM or SAM format.",
+    )
+    parser.add_argument(
+        "-o",
+        "--out-prefix",
+        required=True,
+        type=Path,
+        help="Prefix for generated output files.",
+    )
+    parser.add_argument(
+        "-q",
+        "--mapq",
+        dest="map_qual",
+        type=int,
+        default=30,
+        metavar="INT",
+        help=(
+            "Minimum mapping quality for an alignment to be considered "
+            "uniquely mapped. Default: %(default)s"
+        ),
+    )
+    parser.add_argument(
+        "-s",
+        "--sequencing",
+        dest="layout",
+        required=True,
+        choices=("SE", "PE"),
+        type=str.upper,
+        help="Sequencing layout: SE for single-end or PE for paired-end.",
+    )
+    parser.add_argument(
+        "--skip-plot",
+        action="store_true",
+        help="Generate profile files but do not execute the R plotting script.",
+    )
+    parser.add_argument(
+        "--rscript",
+        default="Rscript",
+        metavar="PATH",
+        help="Rscript executable to use. Default: %(default)s",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+    )
+
+    return parser
+
+
+def validate_args(
+    parser: argparse.ArgumentParser,
+    input_file: Path,
+    output_prefix: Path,
+    map_qual: int,
+) -> None:
+    """Validate command-line arguments."""
+    if not input_file.is_file():
+        parser.error(
+            f"input alignment file does not exist or is not a file: "
+            f"{input_file}"
+        )
+
+    if input_file.suffix.lower() not in {".bam", ".sam", ".cram"}:
+        parser.error(
+            "input alignment file must have a .bam, .sam, or .cram "
+            f"extension: {input_file}"
+        )
+
+    if map_qual < 0:
+        parser.error("--mapq must be zero or greater")
+
+    output_parent = output_prefix.parent
+    if not output_parent.exists():
+        parser.error(f"output directory does not exist: {output_parent}")
+
+    if not output_parent.is_dir():
+        parser.error(f"output parent is not a directory: {output_parent}")
+
+
+def run_plot_script(
+    parser: argparse.ArgumentParser,
+    output_prefix: Path,
+    rscript_executable: str,
+) -> None:
+    """Execute the generated R plotting script safely."""
+    script_path = Path(f"{output_prefix}.insertion_profile.r")
+
+    if not script_path.is_file():
+        parser.exit(
+            1,
+            f"{parser.prog}: error: expected R script was not created: "
+            f"{script_path}\n",
+        )
+
+    resolved_rscript = shutil.which(rscript_executable)
+    if resolved_rscript is None:
+        parser.exit(
+            1,
+            f"{parser.prog}: error: Rscript executable not found: "
+            f"{rscript_executable}\n",
+        )
+
+    try:
+        subprocess.run(
+            [resolved_rscript, str(script_path)],
+            check=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        parser.exit(
+            exc.returncode or 1,
+            f"{parser.prog}: error: R plotting failed for {script_path}\n",
+        )
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Generate the insertion profile and optional plot."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    validate_args(
+        parser=parser,
+        input_file=args.input_file,
+        output_prefix=args.out_prefix,
+        map_qual=args.map_qual,
+    )
+
+    try:
+        alignment = SAM.ParseBAM(str(args.input_file))
+        alignment.insertion_profile(
+            outfile=str(args.out_prefix),
+            q_cut=args.map_qual,
+            PE=args.layout == "PE",
+        )
+    except (OSError, ValueError, RuntimeError) as exc:
+        parser.exit(1, f"{parser.prog}: error: {exc}\n")
+
+    if not args.skip_plot:
+        run_plot_script(
+            parser=parser,
+            output_prefix=args.out_prefix,
+            rscript_executable=args.rscript,
+        )
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "RSeQC"
+version = "5.0.5"
+description = "Quality control package for RNA-seq data."
+readme = "README.md"
+requires-python = ">=3.9"
+
+license = { file = "LICENSE" }
+
+authors = [
+    { name = "Liguo Wang", email = "wangliguo78@gmail.com" },
+    { name = "Shengqin Wang", email = "wzsqwang@gmail.com" },
+    { name = "Wei Li", email = "superliwei@gmail.com" },
+]
+
+maintainers = [
+    { name = "Liguo Wang", email = "wangliguo78@gmail.com" },
+]
+
+keywords = [
+    "RNA-seq",
+    "quality control",
+    "bioinformatics",
+]
+
+dependencies = [
+    "pysam",
+    "bx-python",
+    "numpy",
+    "pyBigWig",
+    "logomaker",
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[project.urls]
+Homepage = "https://rseqc.sourceforge.net/"
+Documentation = "https://rseqc.sourceforge.net/"
