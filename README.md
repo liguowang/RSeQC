@@ -142,11 +142,11 @@ See the `LICENSE` file included with this project for the complete license text.
 
 Documentation and tutorials are available at:
 
-http://rseqc.sourceforge.net/
-https://www.lwang.org/RSeQC/
+1. http://rseqc.sourceforge.net/
+2. https://www.lwang.org/RSeQC/
 
 # Reference
 
 1. Wang L, Wang S, Li W. RSeQC: quality control of RNA-seq experiments. Bioinformatics. 2012;28(16):2184-2185. doi:10.1093/bioinformatics/bts356
-2. Wang L, Nie J, Sicotte H, et al. Measure transcript integrity using RNA-seq data. BMC Bioinformatics. 2016;17:58. Published 2016 Feb 3. doi:10.1186/s12859-016-0922-z
+2. Wang L, Nie J, Sicotte H, et al. Measure transcript integrity using RNA-seq data. BMC Bioinformatics. 2016;17:58. doi:10.1186/s12859-016-0922-z
 
