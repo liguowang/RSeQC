@@ -1,9 +1,13 @@
 # RSeQC
 
+# RSeQC
+
 [![PyPI version](https://img.shields.io/pypi/v/RSeQC.svg)](https://pypi.org/project/RSeQC/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/RSeQC.svg)](https://pypi.org/project/RSeQC/)
 [![License](https://img.shields.io/github/license/liguowang/RSeQC)](LICENSE)
-[![GitHub Actions](https://github.com/liguowang/RSeQC/actions/workflows/ci.yml/badge.svg)](https://github.com/liguowang/RSeQC/actions/workflows/ci.yml)
+[![CI](https://github.com/liguowang/RSeQC/actions/workflows/ci.yml/badge.svg)](https://github.com/liguowang/RSeQC/actions/workflows/ci.yml)
+[![Documentation](https://img.shields.io/badge/docs-online-blue.svg)](https://liguowang.github.io/RSeQC/)
+[![Docs Build](https://github.com/liguowang/RSeQC/actions/workflows/docs.yml/badge.svg)](https://github.com/liguowang/RSeQC/actions/workflows/docs.yml)
 [![PyPI Downloads](https://static.pepy.tech/badge/rseqc)](https://pepy.tech/projects/rseqc)
 
 ## Requirements
