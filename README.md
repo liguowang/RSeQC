@@ -1,13 +1,10 @@
 # RSeQC
 
-# RSeQC
-
 [![PyPI version](https://img.shields.io/pypi/v/RSeQC.svg)](https://pypi.org/project/RSeQC/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/RSeQC.svg)](https://pypi.org/project/RSeQC/)
 [![License](https://img.shields.io/github/license/liguowang/RSeQC)](LICENSE)
 [![CI](https://github.com/liguowang/RSeQC/actions/workflows/ci.yml/badge.svg)](https://github.com/liguowang/RSeQC/actions/workflows/ci.yml)
-[![Documentation](https://img.shields.io/badge/docs-online-blue.svg)](https://liguowang.github.io/RSeQC/)
-[![Docs Build](https://github.com/liguowang/RSeQC/actions/workflows/docs.yml/badge.svg)](https://github.com/liguowang/RSeQC/actions/workflows/docs.yml)
+[![Documentation](https://img.shields.io/badge/docs-online-blue.svg)](https://www.lwang.org/RSeQC/)
 [![PyPI Downloads](https://static.pepy.tech/badge/rseqc)](https://pepy.tech/projects/rseqc)
 
 ## Requirements
@@ -146,3 +143,10 @@ See the `LICENSE` file included with this project for the complete license text.
 Documentation and tutorials are available at:
 
 http://rseqc.sourceforge.net/
+https://www.lwang.org/RSeQC/
+
+# Reference
+
+1. Wang L, Wang S, Li W. RSeQC: quality control of RNA-seq experiments. Bioinformatics. 2012;28(16):2184-2185. doi:10.1093/bioinformatics/bts356
+2. Wang L, Nie J, Sicotte H, et al. Measure transcript integrity using RNA-seq data. BMC Bioinformatics. 2016;17:58. Published 2016 Feb 3. doi:10.1186/s12859-016-0922-z
+
