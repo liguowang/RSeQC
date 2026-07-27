@@ -53,20 +53,46 @@ rseqc_env\Scripts\Activate.ps1
 
 ## Install RSeQC
 
-Install the latest release from PyPI:
+### Install the latest stable release from PyPI
 
 ```bash
 pip install rseqc
+```
+
+### Install the latest development version from GitHub
+
+```bash
+pip install git+https://github.com/liguowang/RSeQC.git
+```
+
+You can also install a specific branch, tag, or commit.
+
+Install a specific branch:
+
+```bash
+pip install git+https://github.com/liguowang/RSeQC.git@main
+```
+
+Install a specific release tag:
+
+```bash
+pip install git+https://github.com/liguowang/RSeQC.git@v5.05
 ```
 
 ---
 
 ## Upgrade RSeQC
 
-Upgrade to the latest version:
+Upgrade an existing installation from PyPI:
 
 ```bash
 pip install --upgrade rseqc
+```
+
+To upgrade a GitHub installation:
+
+```bash
+pip install --upgrade git+https://github.com/liguowang/RSeQC.git
 ```
 
 ---
@@ -99,7 +125,9 @@ python -c "import qcmodule; print('RSeQC installed successfully')"
 
 ## License
 
-RSeQC is licensed under the GNU General Public License v3.0 or later (GPL-3.0-or-later).
+RSeQC is licensed under the **GNU General Public License v3.0 or later (GPL-3.0-or-later)**.
+
+See the `LICENSE` file included with this project for the complete license text.
 
 ---
 
