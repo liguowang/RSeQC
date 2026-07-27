@@ -1,0 +1,99 @@
+cff-version: 1.2.0
+message: >-
+  If you use RSeQC in your research, please cite the following publications.
+title: RSeQC
+version: 5.0.5
+date-released: 2026-07-26
+type: software
+
+authors:
+  - family-names: Wang
+    given-names: Liguo
+    orcid: https://orcid.org/0000-0002-3473-4904
+
+repository-code: https://github.com/liguowang/RSeQC
+url: https://github.com/liguowang/RSeQC
+repository-artifact: https://pypi.org/project/RSeQC/
+license: GPL-3.0-or-later
+
+keywords:
+  - RNA-seq
+  - quality control
+  - transcriptomics
+  - genomics
+  - bioinformatics
+  - single-cell RNA-seq
+  - sequencing
+
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Wang
+      given-names: Liguo
+    - family-names: Wang
+      given-names: Shengqin
+    - family-names: Li
+      given-names: Wei
+  title: "RSeQC: quality control of RNA-seq experiments"
+  journal: Bioinformatics
+  year: 2012
+  volume: 28
+  issue: 16
+  start: 2184
+  end: 2185
+  doi: 10.1093/bioinformatics/bts356
+
+references:
+  - type: article
+    authors:
+      - family-names: Wang
+        given-names: Liguo
+      - family-names: Wang
+        given-names: Shengqin
+      - family-names: Li
+        given-names: Wei
+    title: "RSeQC: quality control of RNA-seq experiments"
+    journal: Bioinformatics
+    year: 2012
+    volume: 28
+    issue: 16
+    start: 2184
+    end: 2185
+    doi: 10.1093/bioinformatics/bts356
+
+  - type: article
+    authors:
+      - family-names: Wang
+        given-names: Liguo
+      - family-names: Nie
+        given-names: Jinfu
+      - family-names: Sicotte
+        given-names: Hugues
+      - family-names: Li
+        given-names: Ying
+      - family-names: Eckel-Passow
+        given-names: Jeanette E.
+      - family-names: Dasari
+        given-names: Surendra
+      - family-names: Vedell
+        given-names: Peter T.
+      - family-names: Barman
+        given-names: Poulami
+      - family-names: Wang
+        given-names: Liewei
+      - family-names: Weinshilboum
+        given-names: Richard
+      - family-names: Jen
+        given-names: Jin
+      - family-names: Huang
+        given-names: Haojie
+      - family-names: Kohli
+        given-names: Manish
+      - family-names: Kocher
+        given-names: Jean-Pierre A.
+    title: "Measure transcript integrity using RNA-seq data"
+    journal: BMC Bioinformatics
+    year: 2016
+    volume: 17
+    article-number: 58
+    doi: 10.1186/s12859-016-0922-z
