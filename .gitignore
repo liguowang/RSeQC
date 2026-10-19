@@ -30,7 +30,4 @@ test/
 *.bw
 *.wig
 *.bedGraph
-*.pdf
-*.png
-*.tiff
 *.log

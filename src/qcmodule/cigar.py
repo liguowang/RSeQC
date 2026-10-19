@@ -4,23 +4,12 @@ This python3 module was converted from python2.7 code using 2to3
 '''
 
 #import built-in modules
-import os,sys
 import re
-import string
-import warnings
-import string
-import collections
-import math
-import random
+from importlib.metadata import version
 
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__copyright__ = "Copyleft"
-__credits__ = []
-__license__ = "GPL"
-__version__="3.0.0"
-__maintainer__ = "Liguo Wang"
-__email__ = "wang.liguo@mayo.edu"
-__status__ = "Production"
+
 
 head_clip = re.compile(r'^(\d+)S')
 tail_clip = re.compile(r'(\d+)S$')

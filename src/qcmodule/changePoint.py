@@ -3,11 +3,11 @@
 This python3 module was converted from python2.7 code using 2to3
 '''
 
-#import built-in modules
-import re
-import sys
 from random import shuffle
 from heapq import nlargest
+from importlib.metadata import version
+
+
 #import third-party modules
 
 #changes to the paths
@@ -15,15 +15,8 @@ from heapq import nlargest
 #changing history to this module
 
 
-
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__copyright__ = "Copyleft"
-__credits__ = []
-__license__ = "GPL"
-__version__="3.0.0"
-__maintainer__ = "Liguo Wang"
-__email__ = "wang.liguo@mayo.edu"
-__status__ = "Production"
 
 
 def S_diff(lst):

@@ -1,65 +1,90 @@
-'''manipulate ndarray list''' 
+#!/usr/bin/env python3
+"""Element-wise operations on NumPy arrays."""
 
-from itertools import starmap
-from operator import mul,add,sub
+from __future__ import annotations
+import numpy as np
 
 __author__ = "Liguo Wang"
-__copyright__ = "Copyleft"
-__credits__ = []
-__license__ = "GPL"
-__version__="3.0.0"
-__maintainer__ = "Liguo Wang"
-__email__ = "wang.liguo@mayo.edu"
-__status__ = "Production"
 
-                                                    
+def check_list(v1, v2):
+    """Validate that two array-like inputs have the same shape.
 
-def check_list(v1,v2):
-    '''check if the length of two list is same'''
-    if v1.size != v2.size:
-        raise ValueError("the lenght of both arrays must be the same")
-    pass
+    The historical implementation checked only ``.size``. Shape checking is
+    safer because arrays such as (2, 3) and (6,) have the same number of
+    elements but are not pairwise-compatible in the intended sense.
+    """
+    a = np.asarray(v1)
+    b = np.asarray(v2)
 
-def Add(v1,v2):
-    '''add two list'''                                                                                 
-    check_list(v1,v2)
-    return v1.__add__(v2)
+    if a.shape != b.shape:
+        raise ValueError(
+            f"both arrays must have the same shape: {a.shape} != {b.shape}"
+        )
 
-def Subtract(v1,v2):
-    '''subtract v2 from v1'''                                                                                 
-    check_list(v1,v2)
-    return v1.__sub__(v2)
+    return a, b
 
-def Product(v1,v2):
-    '''return product of two list'''                                                                                 
-    check_list(v1,v2)
-    return v1.__mul__(v2)
 
-def Division(v1,v2):
-    '''return divide v1 by v2. add 1 to both v1 and v2'''                                                                                 
-    check_list(v1,v2)
-    return (v1+1).__div__(v2+1)
+def Add(v1, v2):
+    """Return the element-wise sum of two arrays."""
+    a, b = check_list(v1, v2)
+    return a + b
 
-def Average(v1,v2):
-    '''return arithmetic mean of two list'''                                                                                 
-    check_list(v1,v2)
-    return v1.__add__(v2)/2
 
-def geometricMean(v1,v2):
-    '''return geometric mean of two list'''                                                                                 
-    check_list(v1,v2)
-    return (v1.__mul__(v2))**0.5
+def Subtract(v1, v2):
+    """Return the element-wise difference ``v1 - v2``."""
+    a, b = check_list(v1, v2)
+    return a - b
 
-def Max(v1,v2):
-    '''pairwise comparison two list. return  the max one between two paried number'''                                                                                 
-    check_list(v1,v2)
-    return map(max,zip(v1,v2))
 
-def Min(v1,v2):
-    '''pairwise comparison two list. return  the max one between two paried number'''                                                                                 
-    check_list(v1,v2)
-    return map(min,zip(v1,v2))
-def euclidean_distance(v1,v2):
-    '''return euclidean distance'''                                                                                 
-    check_list(v1,v2)
-    return (sum((v1.__sub__(v2))**2) / v1.size)**0.5
+def Product(v1, v2):
+    """Return the element-wise product of two arrays."""
+    a, b = check_list(v1, v2)
+    return a * b
+
+
+def Division(v1, v2):
+    """Return element-wise ``(v1 + 1) / (v2 + 1)``.
+
+    Adding 1 to both arrays preserves the behavior documented by the original
+    RSeQC implementation.
+    """
+    a, b = check_list(v1, v2)
+    return (a + 1) / (b + 1)
+
+
+def Average(v1, v2):
+    """Return the element-wise arithmetic mean of two arrays."""
+    a, b = check_list(v1, v2)
+    return (a + b) / 2.0
+
+
+def geometricMean(v1, v2):
+    """Return the element-wise geometric mean of two arrays."""
+    a, b = check_list(v1, v2)
+    return np.sqrt(a * b)
+
+
+def Max(v1, v2):
+    """Return the element-wise maximum of two arrays."""
+    a, b = check_list(v1, v2)
+    return np.maximum(a, b)
+
+
+def Min(v1, v2):
+    """Return the element-wise minimum of two arrays."""
+    a, b = check_list(v1, v2)
+    return np.minimum(a, b)
+
+
+def euclidean_distance(v1, v2):
+    """Return the root-mean-square difference between two arrays.
+
+    Despite its historical name, this function computes
+    ``sqrt(mean((v1 - v2)**2))`` rather than the conventional Euclidean
+    distance ``sqrt(sum((v1 - v2)**2))``. The historical numerical behavior
+    is intentionally preserved.
+    """
+    a, b = check_list(v1, v2)
+    if a.size == 0:
+        raise ValueError("arrays must not be empty")
+    return np.sqrt(np.mean((a - b) ** 2))

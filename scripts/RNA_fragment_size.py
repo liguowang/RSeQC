@@ -16,18 +16,16 @@ preserved.
 """
 
 from __future__ import annotations
-
 import argparse
 import sys
 from pathlib import Path
 from typing import Iterator, Sequence
-
 import numpy as np
 import pysam
+from importlib.metadata import version
 
-
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
 
 DESCRIPTION = (
     "Calculate per-transcript RNA fragment-size statistics from paired-end "

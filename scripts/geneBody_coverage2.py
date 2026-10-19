@@ -18,15 +18,13 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Sequence
-
 import numpy as np
 import pyBigWig
-
 from qcmodule import mystat
+from importlib.metadata import version
 
-
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang, Santiago Revale"
-__version__ = "5.05"
 
 
 def build_parser() -> argparse.ArgumentParser:

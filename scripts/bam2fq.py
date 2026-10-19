@@ -13,9 +13,11 @@ import sys
 from pathlib import Path
 from typing import Iterable, Sequence
 from qcmodule import SAM
+from importlib.metadata import version
 
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.0.5"
+
 
 def build_parser() -> argparse.ArgumentParser:
     """Create and configure the command-line parser."""

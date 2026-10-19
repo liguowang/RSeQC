@@ -25,6 +25,27 @@ installed directly from `PyPI <https://pypi.org/project/RSeQC/>`_ or from the `G
 Release history
 ===================
 
+**RSeQC v5.0.6**
+
+* Oct. 19, 2026
+
+* Continued Python 3 modernization and code cleanup across command-line scripts and ``qcmodule`` utilities.
+* Centralized the package version in ``pyproject.toml`` and removed stale hard-coded module version numbers where appropriate.
+* Improved ``src``-layout package discovery and packaging metadata for modern ``setuptools``/``pip`` builds.
+* Added explicit ``pandas`` and ``matplotlib`` dependencies and aligned package metadata with GPL-3.0-or-later.
+* Fixed and hardened several legacy utility modules, including FASTA/FASTQ, k-mer, ORF, quantile, WIG, statistics, and single-cell BAM helpers.
+* Improved input validation, resource handling, error reporting, and Python 3 compatibility while preserving existing analysis behavior where possible.
+* Fixed several single-cell BAM counting issues, including region-tag classification, UMI set initialization, gene counting, and zero-denominator reporting.
+* Updated installation and project documentation for the v5.0.6 release.
+* Fixed a bug in ``clipping_profile.py`` when analyzing variable-length reads.
+  Soft-clipping counts were accumulated correctly across all read positions,
+  but the output range in ``.clipping_profile.xls`` and
+  ``.clipping_profile.r`` was determined by the length of the last alignment
+  processed rather than the longest read. As a result, clipping counts at
+  positions beyond the last read's length could be omitted from the output.
+  The output range is now determined by the maximum read length observed,
+  making clipping profiles independent of BAM read order.
+
 **RSeQC v5.0.5**
 
 * Jul. 26, 2026
@@ -180,7 +201,8 @@ Download
 Download RSeQC
 ---------------
 
-* `RSeQC (v5.05) <https://sourceforge.net/projects/rseqc/files/rseqc-5.0.5.tar.gz/download>`_
+* `RSeQC (v5.0.6) <https://sourceforge.net/projects/rseqc/files/RSeQC-5.0.6.tar.gz/download>`_
+* `RSeQC (v5.0.5) <https://sourceforge.net/projects/rseqc/files/rseqc-5.0.5.tar.gz/download>`_
 * `RSeQC (v5.0.1) <https://sourceforge.net/projects/rseqc/files/RSeQC-5.0.1.tar.gz/download>`_
 * `RSeQC (v5.0.0) <https://sourceforge.net/projects/rseqc/files/RSeQC-5.0.0.tar.gz/download>`_
 * `RSeQC (v4.0.0) <https://sourceforge.net/projects/rseqc/files/RSeQC-4.0.0.tar.gz/download>`_

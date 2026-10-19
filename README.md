@@ -16,7 +16,7 @@ Check your Python and pip installations:
 
 ```bash
 python3 --version
-pip --version
+python3 -m pip --version
 ```
 
 Example:
@@ -34,7 +34,7 @@ https://pip.pypa.io/en/stable/installation/
 
 ## (Optional) Create a Virtual Environment
 
-Creating a virtual environment is recommended to avoid conflicts with other Python packages.
+Using a virtual environment is recommended to keep RSeQC and its dependencies isolated from other Python packages.
 
 Create a new environment:
 
@@ -60,16 +60,16 @@ rseqc_env\Scripts\Activate.ps1
 
 ## Install RSeQC
 
-### Install the latest stable release from [PyPI](https://pypi.org/project/RSeQC/5.0.5/)
+### Install the latest stable release from [PyPI](https://pypi.org/project/RSeQC/)
 
 ```bash
-pip install rseqc
+python3 -m pip install rseqc
 ```
 
 ### Install the latest development version from GitHub
 
 ```bash
-pip install git+https://github.com/liguowang/RSeQC.git
+python3 -m pip install git+https://github.com/liguowang/RSeQC.git
 ```
 
 You can also install a specific branch, tag, or commit.
@@ -77,13 +77,13 @@ You can also install a specific branch, tag, or commit.
 Install a specific branch:
 
 ```bash
-pip install git+https://github.com/liguowang/RSeQC.git@main
+python3 -m pip install git+https://github.com/liguowang/RSeQC.git@main
 ```
 
 Install a specific release tag:
 
 ```bash
-pip install git+https://github.com/liguowang/RSeQC.git@v5.05
+python3 -m pip install git+https://github.com/liguowang/RSeQC.git@v5.0.6
 ```
 
 ---
@@ -93,13 +93,13 @@ pip install git+https://github.com/liguowang/RSeQC.git@v5.05
 Upgrade an existing installation from PyPI:
 
 ```bash
-pip install --upgrade rseqc
+python3 -m pip install --upgrade rseqc
 ```
 
 To upgrade a GitHub installation:
 
 ```bash
-pip install --upgrade git+https://github.com/liguowang/RSeQC.git
+python3 -m pip install --upgrade git+https://github.com/liguowang/RSeQC.git
 ```
 
 ---
@@ -109,7 +109,7 @@ pip install --upgrade git+https://github.com/liguowang/RSeQC.git
 Remove RSeQC:
 
 ```bash
-pip uninstall rseqc
+python3 -m pip uninstall rseqc
 ```
 
 ---
@@ -125,7 +125,7 @@ bam_stat.py --help
 or
 
 ```bash
-python -c "import qcmodule; print('RSeQC installed successfully')"
+python3 -c "from importlib.metadata import version; print('RSeQC', version('RSeQC'))"
 ```
 
 ---
@@ -138,14 +138,14 @@ See the `LICENSE` file included with this project for the complete license text.
 
 ---
 
-# Documentation
+## Documentation
 
 Documentation and tutorials are available at:
 
 1. http://rseqc.sourceforge.net/
 2. https://www.lwang.org/RSeQC/
 
-# Reference
+## References
 
 1. Wang L, Wang S, Li W. RSeQC: quality control of RNA-seq experiments. Bioinformatics. 2012;28(16):2184-2185. doi:10.1093/bioinformatics/bts356
 2. Wang L, Nie J, Sicotte H, et al. Measure transcript integrity using RNA-seq data. BMC Bioinformatics. 2016;17:58. doi:10.1186/s12859-016-0922-z

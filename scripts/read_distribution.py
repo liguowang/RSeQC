@@ -28,10 +28,10 @@ from bx.intervals.intersection import Intersecter, Interval
 from qcmodule import BED
 from qcmodule import SAM
 from qcmodule import bam_cigar
+from importlib.metadata import version
 
-
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
 
 
 DESCRIPTION = (

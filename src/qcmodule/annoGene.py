@@ -1,15 +1,11 @@
 import collections
 from bx.intervals import *
 from qcmodule import BED
+from importlib.metadata import version
+
 
 __author__ = "Liguo Wang"
-__copyright__ = "Copyleft"
-__credits__ = []
-__license__ = "GPL"
-__version__="3.0.0"
-__maintainer__ = "Liguo Wang"
-__email__ = "wang.liguo@mayo.edu"
-__status__ = "Production"
+__version__ = version("RSeQC")
 
 
 '''

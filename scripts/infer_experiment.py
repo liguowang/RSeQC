@@ -9,6 +9,12 @@ import sys
 from pathlib import Path
 from typing import Sequence
 from qcmodule import SAM
+from importlib.metadata import version
+
+
+__author__ = "Liguo Wang"
+__version__ = version("RSeQC")
+
 
 DESCRIPTION = (
     "Infer RNA-seq library layout and strandedness from a SAM/BAM file."
@@ -42,10 +48,6 @@ Notes
 * A sample size of at least 200,000 alignments is recommended.
 * Reads should be aligned as non-strand-specific before running this tool.
 """
-
-__author__ = "Liguo Wang"
-__version__ = "5.05"
-
 
 def build_parser() -> argparse.ArgumentParser:
     """Create and configure the command-line parser."""

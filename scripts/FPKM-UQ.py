@@ -18,9 +18,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Sequence
 import numpy as np
+from importlib.metadata import version
 
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
 
 
 def printlog(message: str) -> None:

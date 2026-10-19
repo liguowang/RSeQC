@@ -19,13 +19,12 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Sequence
-
 from qcmodule import heatmap
 from qcmodule import scbam
+from importlib.metadata import version
 
-
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
 
 
 DESCRIPTION = (

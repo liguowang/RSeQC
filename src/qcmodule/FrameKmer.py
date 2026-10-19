@@ -1,129 +1,177 @@
-#!/usr/bin/env python
-'''deal with Kmer. DNA sequence should only A, C, G, T. python2.7 or newer'''
+#!/usr/bin/env python3
+"""Utilities for generating and analyzing DNA k-mers.
 
-#import built-in modules
-import os,sys
-import numpy
-import math
-from collections import Counter
-import re
+DNA sequences are expected to contain A, C, G, T, and optionally N.
+"""
+
+from __future__ import annotations
+
 import itertools
+import math
+import re
+from collections import Counter
 
-def word_generator(seq,word_size,step_size,frame=0):
-	'''generate DNA word from sequence using word_size and step_size. Frame is 0, 1 or2'''
-	for i in range(frame,len(seq),step_size):
-		word =  seq[i:i+word_size]
-		if len(word) == word_size:
-			yield word
+
+_DNA_PATTERN = re.compile(r"^[ACGTN]+$")
+
+
+def word_generator(seq, word_size, step_size, frame=0):
+    """Yield fixed-length words from a sequence.
+
+    Parameters
+    ----------
+    seq : str
+        Input sequence.
+    word_size : int
+        Length of each word.
+    step_size : int
+        Distance between successive word starts.
+    frame : int, default=0
+        Starting offset in the sequence.
+    """
+    if word_size <= 0:
+        raise ValueError("word_size must be greater than zero")
+    if step_size <= 0:
+        raise ValueError("step_size must be greater than zero")
+    if frame < 0:
+        raise ValueError("frame must be non-negative")
+
+    for i in range(frame, len(seq), step_size):
+        word = seq[i:i + word_size]
+        if len(word) == word_size:
+            yield word
+
 
 def seq_generator(fastafile):
-	'''DNA sequence only contains A,C,G,T,N. sequence with other characters will be removed'''
-	tmpseq=''
-	name=''
-	DNA_pat = re.compile(r'^[ACGTN]+$')
-	for line in open(fastafile,'r'):
-		line=line.strip().upper()
-		if line.startswith(('#',' ','\n')):continue
-		if line.startswith(('>','@')):
-			if tmpseq:
-				yield [name,tmpseq]
-				tmpseq=''
-			name = line.split()[0][1:]
-		elif DNA_pat.match(line):
-			tmpseq += line
-	yield [name,tmpseq]
-	
+    """Yield ``[name, sequence]`` records from a FASTA-like file.
+
+    Sequence lines containing characters other than A, C, G, T, or N are
+    ignored, preserving the behavior of the original implementation.
+    Header lines may begin with ``>`` or ``@``.
+    """
+    name = None
+    seq_parts = []
+
+    with open(fastafile, "r") as handle:
+        for line in handle:
+            line = line.strip().upper()
+
+            if not line or line.startswith("#"):
+                continue
+
+            if line.startswith((">", "@")):
+                if name is not None:
+                    yield [name, "".join(seq_parts)]
+                name = line.split()[0][1:]
+                seq_parts = []
+            elif _DNA_PATTERN.fullmatch(line):
+                # Preserve the old behavior: valid sequence before a header
+                # is accumulated and ultimately associated with an empty name.
+                seq_parts.append(line)
+
+    if name is not None:
+        yield [name, "".join(seq_parts)]
+    elif seq_parts:
+        yield ["", "".join(seq_parts)]
+
+
 def all_possible_kmer(l):
-	'''return all possible combinations of A,C,G,T,N. only support A,C,G,T,N. l is length of kmer'''
-	for i in itertools.product(['A','C','G','T','N'],repeat=l):
-		yield ''.join(i)
+    """Yield all length-``l`` combinations of A, C, G, T, and N."""
+    if l < 0:
+        raise ValueError("k-mer length must be non-negative")
 
-def kmer_freq_file (fastafile,word_size,step_size=1,frame=0,min_count=0):
-	'''Calculate kmer frequency from fasta file'''
-	seq_num = 0
-	ret_dict={}
-	for n,s in seq_generator(fastafile):
-		seq_num += 1
-		if seq_num == 1:
-			count_table = Counter(word_generator(s,word_size=word_size,step_size=step_size,frame=frame))
-		else:
-			count_table.update( word_generator(s,word_size=word_size,step_size=step_size,frame=frame) )
-	
-	#return count_table
-	for kmer in all_possible_kmer(word_size):
-		if kmer not in count_table: count_table[kmer]=0
-		if count_table[kmer] >= min_count:
-			#print kmer + '\t' + str(count_table[kmer])
-			if 'N' in kmer:continue
-			ret_dict[kmer] = count_table[kmer]
-	return ret_dict		
+    for bases in itertools.product("ACGTN", repeat=l):
+        yield "".join(bases)
 
-def kmer_freq_seq (seq,word_size,step_size=1,frame=0,min_count=0):
-	'''Calculate kmer frequency from DNA sequence. coding. genome is hexamer table calculated
-	from coding region and whole genome (as background control)
-	'''
-	count_table = Counter(word_generator(seq,word_size=word_size,step_size=step_size,frame=frame))
-	for kmer in all_possible_kmer(word_size):
-		if kmer not in count_table: count_table[kmer]=0
-		if count_table[kmer] >= min_count:
-			print(kmer + '\t' + str(count_table[kmer]))
 
-def kmer_ratio(seq,word_size,step_size,coding,noncoding):
-	if len(seq) < word_size:
-		return 0
-		
-	sum_of_log_ratio_0 = 0.0
-	sum_of_log_ratio_1 = 0.0
-	sum_of_log_ratio_2 = 0.0	
-	frame0_count=0.0
-	frame1_count=0.0
-	frame2_count=0.0
-	for k in word_generator(seq=seq, word_size = word_size, step_size=step_size,frame=0):	
-		if (k not in coding) or (k not in noncoding):
-			continue
-		if coding[k]>0 and noncoding[k] >0:
-			sum_of_log_ratio_0  +=  math.log( coding[k] / noncoding[k])
-		elif coding[k]>0 and noncoding[k] == 0:
-			sum_of_log_ratio_0 += 1
-		elif coding[k] == 0 and noncoding[k] == 0:
-			continue
-		elif coding[k] == 0 and noncoding[k] >0 :
-			sum_of_log_ratio_0 -= 1
-		else:
-			continue
-		frame0_count += 1
-	'''	
-	for k in word_generator(seq=seq, word_size = word_size, step_size=step_size,frame=1):
-		if (not coding.has_key(k)) or (not noncoding.has_key(k)):
-			continue
-		if coding[k]>0 and noncoding[k] >0:
-			sum_of_log_ratio_1  +=  math.log( coding[k] / noncoding[k])
-		elif coding[k]>0 and noncoding[k] == 0:
-			sum_of_log_ratio_1 += 1
-		elif coding[k] == 0 and noncoding[k] == 0:
-			continue
-		elif coding[k] == 0 and noncoding[k] >0 :
-			sum_of_log_ratio_1 -= 1
-		else:
-			continue
-		frame1_count += 1
-	
-	for k in word_generator(seq=seq, word_size = word_size, step_size=step_size,frame=2):
-		if (not coding.has_key(k)) or (not noncoding.has_key(k)):
-			continue
-		if coding[k]>0 and noncoding[k] >0:
-			sum_of_log_ratio_2  +=  math.log( coding[k] / noncoding[k])
-		elif coding[k]>0 and noncoding[k] == 0:
-			sum_of_log_ratio_2 += 1
-		elif coding[k] == 0 and noncoding[k] == 0:
-			continue
-		elif coding[k] == 0 and noncoding[k] >0 :
-			sum_of_log_ratio_2 -= 1
-		else:
-			continue
-		frame2_count += 1
-	return max(sum_of_log_ratio_0/frame0_count, sum_of_log_ratio_1/frame1_count,sum_of_log_ratio_2/frame2_count)	
-	'''
-	return sum_of_log_ratio_0/frame0_count
-	
+def kmer_freq_file(fastafile, word_size, step_size=1, frame=0, min_count=0):
+    """Return k-mer counts from sequences in a FASTA-like file.
 
+    K-mers containing ``N`` are omitted from the returned dictionary.
+    """
+    count_table = Counter()
+
+    for _name, seq in seq_generator(fastafile):
+        count_table.update(
+            word_generator(
+                seq,
+                word_size=word_size,
+                step_size=step_size,
+                frame=frame,
+            )
+        )
+
+    ret_dict = {}
+    for kmer in all_possible_kmer(word_size):
+        count = count_table.get(kmer, 0)
+        if count >= min_count and "N" not in kmer:
+            ret_dict[kmer] = count
+
+    return ret_dict
+
+
+def kmer_freq_seq(seq, word_size, step_size=1, frame=0, min_count=0):
+    """Print k-mer counts for a DNA sequence."""
+    count_table = Counter(
+        word_generator(
+            seq,
+            word_size=word_size,
+            step_size=step_size,
+            frame=frame,
+        )
+    )
+
+    for kmer in all_possible_kmer(word_size):
+        count = count_table.get(kmer, 0)
+        if count >= min_count:
+            print(f"{kmer}\t{count}")
+
+
+def kmer_ratio(seq, word_size, step_size, coding, noncoding):
+    """Calculate the frame-0 coding/noncoding k-mer log-ratio score.
+
+    This preserves the active algorithm in the original implementation:
+    only frame 0 is evaluated. K-mers absent from either reference mapping
+    are skipped.
+
+    Returns
+    -------
+    float
+        Mean frame-0 score. Returns 0.0 if the sequence is shorter than
+        ``word_size`` or if no usable k-mers are available.
+    """
+    if len(seq) < word_size:
+        return 0.0
+
+    sum_of_log_ratio_0 = 0.0
+    frame0_count = 0
+
+    for kmer in word_generator(
+        seq=seq,
+        word_size=word_size,
+        step_size=step_size,
+        frame=0,
+    ):
+        if kmer not in coding or kmer not in noncoding:
+            continue
+
+        coding_count = coding[kmer]
+        noncoding_count = noncoding[kmer]
+
+        if coding_count > 0 and noncoding_count > 0:
+            sum_of_log_ratio_0 += math.log(coding_count / noncoding_count)
+        elif coding_count > 0 and noncoding_count == 0:
+            sum_of_log_ratio_0 += 1
+        elif coding_count == 0 and noncoding_count == 0:
+            continue
+        elif coding_count == 0 and noncoding_count > 0:
+            sum_of_log_ratio_0 -= 1
+        else:
+            continue
+
+        frame0_count += 1
+
+    if frame0_count == 0:
+        return 0.0
+
+    return sum_of_log_ratio_0 / frame0_count

@@ -5,10 +5,6 @@ This python3 module was converted from python2.7 code using 2to3
 #import built-in modules
 import os,sys
 import re
-import string
-from optparse import OptionParser
-import warnings
-import string
 import collections
 import math
 #import gc
@@ -24,20 +20,16 @@ from bx.intervals import *
 from itertools import *
 from . import fasta
 import pysam
+from importlib.metadata import version
+
 
 #changes to the paths
 
 #changing history to this module
 #05/26/2011: suppport multiple spliced mapped reads
 
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__copyright__ = "Copyleft"
-__credits__ = []
-__license__ = "GPL"
-__version__="3.0.0"
-__maintainer__ = "Liguo Wang"
-__email__ = "wang.liguo@mayo.edu"
-__status__ = "Production"
 
 
 class ParseBED:

@@ -20,10 +20,10 @@ from typing import Iterable, Sequence
 import numpy as np
 import pyBigWig
 from qcmodule import BED
+from importlib.metadata import version
 
-
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
 
 
 DESCRIPTION = (

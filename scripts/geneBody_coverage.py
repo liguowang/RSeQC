@@ -30,9 +30,11 @@ import numpy as np
 import pysam
 from qcmodule import getBamFiles
 from qcmodule import mystat
+from importlib.metadata import version
 
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
+
 
 def valid_name(value: str) -> str:
     """Convert a string into a valid R variable name."""

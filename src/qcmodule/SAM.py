@@ -9,11 +9,7 @@
 import os,sys
 import re
 import string
-from optparse import OptionParser
-import warnings
-import string
 import collections
-import math
 import random
 
 #import third-party modules
@@ -28,14 +24,10 @@ from qcmodule import mystat
 from qcmodule import fasta
 from qcmodule import bam_cigar
 from qcmodule import BED
-#changes to the paths
-
-#changing history to this module
-#05/26/2011: suppport multiple spliced mapped reads
-#10/13/2011: saturation test for RNAs-eq data
+from importlib.metadata import version
 
 __author__ = "Liguo Wang"
-__version__="5.0.5"
+__version__ = version("RSeQC")
 
 
 class ParseSAM(object):
@@ -331,7 +323,6 @@ class ParseSAM(object):
         print("Writing unmapped reads to\"",outfile,"\"... ", end=' ', file=sys.stderr)
         
         for line in self.f:
-            hits=[]
             if line[0] == '@':continue                      #skip head lines    
             if ParseSAM._reExpr2.match(line):continue       #skip blank lines
             field=line.rstrip().split() 
@@ -361,7 +352,6 @@ class ParseSAM(object):
         PPcount=0
         print("Writing proper paired reads to\"",outfile,"\"... ", end=' ', file=sys.stderr)
         for line in self.f:
-            hits=[]
             if line[0] == '@':continue                      #skip head lines    
             if ParseSAM._reExpr2.match(line):continue       #skip blank lines
             field=line.rstrip('\n').split() 
@@ -383,7 +373,6 @@ class ParseSAM(object):
             outfile2 = outfile +".NVC_plot.r"
         FO=open(outfile1,'w')
         RS=open(outfile2,'w')
-        PPcount=0
         
         transtab = string.maketrans("ACGTNX","TGCANX")
         base_freq=collections.defaultdict(int)
@@ -567,7 +556,6 @@ class ParseSAM(object):
         Uniqcount=0
         print("Writing uniquely mapped reads to\"",outfile,"\"... ", end=' ', file=sys.stderr)
         for line in self.f:
-            hits=[]
             if line[0] == '@':continue                      #skip head lines    
             if ParseSAM._reExpr2.match(line):continue       #skip blank lines
             field=line.rstrip('\n').split() 
@@ -592,7 +580,6 @@ class ParseSAM(object):
         wrongStrand=0
         print("Writing incorrectly stranded reads to\"",outfile,"\"... ", end=' ', file=sys.stderr)
         for line in self.f:
-            hits=[]
             if line.startswith('@'):continue                        #skip head lines    
             if ParseSAM._reExpr2.match(line):continue       #skip blank lines
             field=line.rstrip('\n').split() 
@@ -994,7 +981,6 @@ class QCSAM(object):
         ranges={}
         totalReads=0
         fragment_num=0      #splice reads will counted twice
-        rpkm={}
         
         #read SAM 
         print("reading "+ self.fileName + '...', end=' ', file=sys.stderr)
@@ -1269,7 +1255,7 @@ class QCSAM(object):
             for st,end in zip(exon_starts,exon_ends):               
                 if chrom not in exon_ranges:
                     exon_ranges[chrom] = Intersecter()
-                exon_ranges[chrom].add_interval( Interval( st, end ) )      
+                exon_ranges[chrom].add_interval(Interval(st, end ))
 
         #read SAM 
         print("reading "+ self.fileName + '...', end=' ', file=sys.stderr)
@@ -2347,7 +2333,7 @@ class ParseBAM(object):
 
         try:
             while(1):
-                flag=0
+                #flag=0
                 aligned_read = next(self.samfile)
                 R_total +=1
                 if aligned_read.is_qcfail:          #skip QC fail read
@@ -2437,7 +2423,7 @@ class ParseBAM(object):
                 chrom     = fields[0]
                 txStart  = int( fields[1] )
                 txEnd    = int( fields[2] )
-                geneName      = fields[3]
+                #geneName      = fields[3]
                 strand    = fields[5]
             except:
                 print("[NOTE:input bed must be 12-column] skipped this line: " + line, file=sys.stderr)
@@ -2504,7 +2490,7 @@ class ParseBAM(object):
         
         print("Total " + str(count) + " usable reads were sampled", file=sys.stderr)
         protocol="unknown"
-        strandness=None
+        #strandness=None
         spec1=0.0
         spec2=0.0
         other=0.0
@@ -2636,7 +2622,7 @@ class ParseBAM(object):
         
         print("Calcualte wigsum ... ", file=sys.stderr)
         wigsum = 0.0
-        read_id=''
+        #read_id=''
         for chr_name, chr_size in list(chrom_sizes.items()):        #iterate each chrom
             try:
                 self.samfile.fetch(chr_name,0,chr_size)
@@ -2661,14 +2647,14 @@ class ParseBAM(object):
                                 break
                     if flag==1:continue                     #skip multiple map read     
                 
-                if aligned_read.is_paired:
-                    if aligned_read.is_read1:read_id = '1'
-                    if aligned_read.is_read2:read_id = '2'
+                #if aligned_read.is_paired:
+                    #if aligned_read.is_read1:read_id = '1'
+                    #if aligned_read.is_read2:read_id = '2'
                 
-                if aligned_read.is_reverse:map_strand = '-'
-                else:map_strand = '+'
+                #if aligned_read.is_reverse:map_strand = '-'
+                #else:map_strand = '+'
                 
-                key = read_id + map_strand
+                #key = read_id + map_strand
                 
                 hit_st = aligned_read.pos
                 for block in bam_cigar.fetch_exon(chr_name, hit_st, aligned_read.cigar): 
@@ -2799,7 +2785,7 @@ class ParseBAM(object):
         minus_ranges={}
         unstrand_ranges={}
         
-        rpkm_value={}
+        #rpkm_value={}
         
         RPKM_OUT = open(outfile,'w')
         if self.bam_format:print("Load BAM file ... ", end=' ', file=sys.stderr)
@@ -2883,7 +2869,7 @@ class ParseBAM(object):
                 exon_sizes = list(map(int,fields[10].rstrip(',\n').split(',')))
                 intron_starts = exon_ends[:-1]
                 intron_ends=exon_starts[1:]
-                key='\t'.join((chrom.lower(),str(tx_start),str(tx_end),geneName,'0',strand))
+                #key='\t'.join((chrom.lower(),str(tx_start),str(tx_end),geneName,'0',strand))
             except:
                 print("[NOTE:input bed must be 12-column] skipped this line: " + line, end=' ', file=sys.stderr)
                 continue
@@ -2961,7 +2947,7 @@ class ParseBAM(object):
             outfile2 = outfile +".NVC_plot.r"
         FO=open(outfile1,'w')
         RS=open(outfile2,'w')
-        PPcount=0
+        #PPcount=0
         
         transtab = str.maketrans("ACGTNX","TGCANX")
         base_freq=collections.defaultdict(int)
@@ -3236,129 +3222,253 @@ class ParseBAM(object):
         print('dev.off()', file=RS)
         #self.f.seek(0)
 
-    def clipping_profile(self,outfile, q_cut, PE, type="S"):
-        '''calculate profile of soft clipping or insertion'''
-        
+    def clipping_profile(self, outfile, q_cut, PE, type="S"):
+        """Calculate the positional profile of soft clipping.
+
+        For variable-length reads, the denominator at each position is the
+        number of reads that actually contain that position. For paired-end
+        data, read 1 and read 2 lengths are tracked independently.
+        """
         out_file1 = outfile + ".clipping_profile.xls"
         out_file2 = outfile + ".clipping_profile.r"
-        OUT = open(out_file1,'w')
-        ROUT = open(out_file2,'w')
-        
-        print("Position\tClipped_nt\tNon_clipped_nt", file=OUT)
-        
-        if self.bam_format:print("Load BAM file ... ", end=' ', file=sys.stderr)
-        else:print("Load SAM file ... ", end=' ', file=sys.stderr)
-        
-        cigar_str = ""
-        
-        #single end sequencing
-        if PE is False:
-            total_read = 0.0        
-            soft_clip_profile = collections.defaultdict(int)
-            try:
-                while(1):
-                    aligned_read = next(self.samfile)
-                    if aligned_read.mapq < q_cut: continue
-                    if aligned_read.is_unmapped:continue    #skip unmapped read
-                    if aligned_read.is_qcfail:continue      #skip low quality
-                
-                    total_read +=1
-                    cigar_str = bam_cigar.list2longstr(aligned_read.cigar)  # ([(0, 9), (4, 1)] ==> MMMMMMMMMS
-                    
-                    if type not in cigar_str:   # no clipping
-                        continue
-                    if aligned_read.is_reverse:
-                        cigar_str = cigar_str[::-1]     
+        OUT = open(out_file1, "w")
+        ROUT = open(out_file2, "w")
 
-                    for indx,symbl in enumerate(cigar_str):
-                        if symbl == type:
-                            soft_clip_profile[indx] += 1.0          
+        print("Position\tClipped_nt\tNon_clipped_nt", file=OUT)
+
+        if self.bam_format:
+            print("Load BAM file ... ", end=" ", file=sys.stderr)
+        else:
+            print("Load SAM file ... ", end=" ", file=sys.stderr)
+
+        # single-end sequencing
+        if PE is False:
+            total_read = 0
+            max_len = 0
+            soft_clip_profile = collections.defaultdict(int)
+            position_coverage = collections.defaultdict(int)
+
+            try:
+                while True:
+                    aligned_read = next(self.samfile)
+                    if aligned_read.mapq < q_cut:
+                        continue
+                    if aligned_read.is_unmapped:
+                        continue
+                    if aligned_read.is_qcfail:
+                        continue
+
+                    total_read += 1
+                    cigar_str = bam_cigar.list2longstr(aligned_read.cigar)
+                    read_len = len(cigar_str)
+                    max_len = max(max_len, read_len)
+
+                    # Each accepted read contributes to the denominator only
+                    # at positions that exist in that read.
+                    for indx in range(read_len):
+                        position_coverage[indx] += 1
+
+                    if aligned_read.is_reverse:
+                        cigar_str = cigar_str[::-1]
+
+                    if type not in cigar_str:
+                        continue
+
+                    for indx, symbol in enumerate(cigar_str):
+                        if symbol == type:
+                            soft_clip_profile[indx] += 1
             except StopIteration:
                 print("Done", file=sys.stderr)
-            
-            print("Totoal reads used: %d" % int(total_read), file=sys.stderr)
-            read_pos = list(range(0,len(cigar_str)))
+
+            print("Total reads used: %d" % total_read, file=sys.stderr)
+            read_pos = list(range(max_len))
             clip_count = []
+            nonclip_count = []
+
             for i in read_pos:
-                print(str(i) + '\t' + str(soft_clip_profile[i]) + '\t' + str(total_read - soft_clip_profile[i]), file=OUT)
-                clip_count.append(soft_clip_profile[i])
-            
-            
-            print("pdf(\"%s\")" % (outfile + '.clipping_profile.pdf'), file=ROUT)
-            print("read_pos=c(%s)" % ','.join([str(i) for i in read_pos]), file=ROUT)
-            print("clip_count=c(%s)" % ','.join([str(i) for i in clip_count]), file=ROUT)
-            print("nonclip_count= %d - clip_count" % (total_read), file=ROUT)
-            print('plot(read_pos, nonclip_count*100/(clip_count+nonclip_count),col="blue",main="clipping profile",xlab="Position of read",ylab="Non-clipped %",type="b")', file=ROUT)
+                clipped = soft_clip_profile[i]
+                nonclipped = position_coverage[i] - clipped
+                print(
+                    str(i) + "\t" + str(clipped) + "\t" + str(nonclipped),
+                    file=OUT,
+                )
+                clip_count.append(clipped)
+                nonclip_count.append(nonclipped)
+
+            print(
+                'pdf("%s")' % (outfile + ".clipping_profile.pdf"),
+                file=ROUT,
+            )
+            print(
+                "read_pos=c(%s)"
+                % ",".join(str(i) for i in read_pos),
+                file=ROUT,
+            )
+            print(
+                "clip_count=c(%s)"
+                % ",".join(str(i) for i in clip_count),
+                file=ROUT,
+            )
+            print(
+                "nonclip_count=c(%s)"
+                % ",".join(str(i) for i in nonclip_count),
+                file=ROUT,
+            )
+            print(
+                'plot(read_pos, nonclip_count*100/(clip_count+nonclip_count),'
+                'col="blue",main="clipping profile",xlab="Position of read",'
+                'ylab="Non-clipped %",type="b")',
+                file=ROUT,
+            )
             print("dev.off()", file=ROUT)
 
-        
+        # paired-end sequencing
         if PE is True:
-            total_read1 = 0.0
-            total_read2 = 0.0
+            total_read1 = 0
+            total_read2 = 0
+            max_len_r1 = 0
+            max_len_r2 = 0
             r1_soft_clip_profile = collections.defaultdict(int)
             r2_soft_clip_profile = collections.defaultdict(int)
+            r1_position_coverage = collections.defaultdict(int)
+            r2_position_coverage = collections.defaultdict(int)
+
             try:
-                while(1):
+                while True:
                     aligned_read = next(self.samfile)
-                    if aligned_read.mapq < q_cut: continue
-                    if aligned_read.is_unmapped:continue    #skip unmapped read
-                    if aligned_read.is_qcfail:continue      #skip low quality
-                    if not aligned_read.is_paired: continue
+                    if aligned_read.mapq < q_cut:
+                        continue
+                    if aligned_read.is_unmapped:
+                        continue
+                    if aligned_read.is_qcfail:
+                        continue
+                    if not aligned_read.is_paired:
+                        continue
+
+                    cigar_str = bam_cigar.list2longstr(aligned_read.cigar)
+                    read_len = len(cigar_str)
+
+                    # Orient read positions consistently from the 5' end
+                    # before counting clipped positions.
+                    if aligned_read.is_reverse:
+                        cigar_str = cigar_str[::-1]
+
                     if aligned_read.is_read1:
                         total_read1 += 1
-                    if aligned_read.is_read2:
-                        total_read2 += 1                                            
-                    cigar_str = bam_cigar.list2longstr(aligned_read.cigar)  # ([(0, 9), (4, 1)] ==> MMMMMMMMMS
-                    if aligned_read.is_reverse:
-                        cigar_str = cigar_str[::-1]                 
-                    
-                    if type not in cigar_str:   # no clipping
-                        continue
-                    
-                    if aligned_read.is_read1:
-                        for indx,symbl in enumerate(cigar_str):
-                            if symbl == type:
-                                r1_soft_clip_profile[indx] += 1.0
-                    if aligned_read.is_read2:
-                        for indx,symbl in  enumerate(cigar_str):
-                            if symbl == type:
-                                r2_soft_clip_profile[indx] += 1.0
+                        max_len_r1 = max(max_len_r1, read_len)
+                        for indx in range(read_len):
+                            r1_position_coverage[indx] += 1
+                        if type in cigar_str:
+                            for indx, symbol in enumerate(cigar_str):
+                                if symbol == type:
+                                    r1_soft_clip_profile[indx] += 1
+
+                    elif aligned_read.is_read2:
+                        total_read2 += 1
+                        max_len_r2 = max(max_len_r2, read_len)
+                        for indx in range(read_len):
+                            r2_position_coverage[indx] += 1
+                        if type in cigar_str:
+                            for indx, symbol in enumerate(cigar_str):
+                                if symbol == type:
+                                    r2_soft_clip_profile[indx] += 1
+
             except StopIteration:
                 print("Done", file=sys.stderr)
-            
-            
-            read_pos = list(range(0,len(cigar_str)))
+
+            read_pos_r1 = list(range(max_len_r1))
+            read_pos_r2 = list(range(max_len_r2))
             r1_clip_count = []
+            r1_nonclip_count = []
             r2_clip_count = []
-            
-            print("Totoal read-1 used: %d" % int(total_read1), file=sys.stderr)
-            print("Totoal read-2 used: %d" % int(total_read2), file=sys.stderr)
+            r2_nonclip_count = []
+
+            print("Total read-1 used: %d" % total_read1, file=sys.stderr)
+            print("Total read-2 used: %d" % total_read2, file=sys.stderr)
+
             print("Read-1:", file=OUT)
-            for i in read_pos:
-                print(str(i) + '\t' + str(r1_soft_clip_profile[i]) + '\t' + str(total_read1 - r1_soft_clip_profile[i]), file=OUT)       
-                r1_clip_count.append(r1_soft_clip_profile[i])
-                
+            for i in read_pos_r1:
+                clipped = r1_soft_clip_profile[i]
+                nonclipped = r1_position_coverage[i] - clipped
+                print(
+                    str(i) + "\t" + str(clipped) + "\t" + str(nonclipped),
+                    file=OUT,
+                )
+                r1_clip_count.append(clipped)
+                r1_nonclip_count.append(nonclipped)
 
             print("Read-2:", file=OUT)
-            for i in read_pos:
-                print(str(i) + '\t' + str(r2_soft_clip_profile[i]) + '\t' + str(total_read2 - r2_soft_clip_profile[i]), file=OUT)
-                r2_clip_count.append(r2_soft_clip_profile[i])
-        
-            
-            print("pdf(\"%s\")" % (outfile + '.clipping_profile.R1.pdf'), file=ROUT)
-            print("read_pos=c(%s)" % ','.join([str(i) for i in read_pos]), file=ROUT)
-            print("r1_clip_count=c(%s)" % ','.join([str(i) for i in r1_clip_count]), file=ROUT)
-            print("r1_nonclip_count = %d - r1_clip_count" % (total_read1), file=ROUT)
-            print('plot(read_pos, r1_nonclip_count*100/(r1_clip_count + r1_nonclip_count),col="blue",main="clipping profile",xlab="Position of read (read-1)",ylab="Non-clipped %",type="b")', file=ROUT)
+            for i in read_pos_r2:
+                clipped = r2_soft_clip_profile[i]
+                nonclipped = r2_position_coverage[i] - clipped
+                print(
+                    str(i) + "\t" + str(clipped) + "\t" + str(nonclipped),
+                    file=OUT,
+                )
+                r2_clip_count.append(clipped)
+                r2_nonclip_count.append(nonclipped)
+
+            print(
+                'pdf("%s")' % (outfile + ".clipping_profile.R1.pdf"),
+                file=ROUT,
+            )
+            print(
+                "read_pos_r1=c(%s)"
+                % ",".join(str(i) for i in read_pos_r1),
+                file=ROUT,
+            )
+            print(
+                "r1_clip_count=c(%s)"
+                % ",".join(str(i) for i in r1_clip_count),
+                file=ROUT,
+            )
+            print(
+                "r1_nonclip_count=c(%s)"
+                % ",".join(str(i) for i in r1_nonclip_count),
+                file=ROUT,
+            )
+            print(
+                'plot(read_pos_r1, '
+                'r1_nonclip_count*100/(r1_clip_count+r1_nonclip_count),'
+                'col="blue",main="clipping profile",'
+                'xlab="Position of read (read-1)",'
+                'ylab="Non-clipped %",type="b")',
+                file=ROUT,
+            )
             print("dev.off()", file=ROUT)
 
-            print("pdf(\"%s\")" % (outfile + '.clipping_profile.R2.pdf'), file=ROUT)
-            print("read_pos=c(%s)" % ','.join([str(i) for i in read_pos]), file=ROUT)
-            print("r2_clip_count=c(%s)" % ','.join([str(i) for i in r2_clip_count]), file=ROUT)
-            print("r2_nonclip_count = %d - r2_clip_count" % (total_read2), file=ROUT)
-            print('plot(read_pos, r2_nonclip_count*100/(r2_clip_count + r2_nonclip_count),col="blue",main="clipping profile",xlab="Position of read (read-2)",ylab="Non-clipped %",type="b")', file=ROUT)
+            print(
+                'pdf("%s")' % (outfile + ".clipping_profile.R2.pdf"),
+                file=ROUT,
+            )
+            print(
+                "read_pos_r2=c(%s)"
+                % ",".join(str(i) for i in read_pos_r2),
+                file=ROUT,
+            )
+            print(
+                "r2_clip_count=c(%s)"
+                % ",".join(str(i) for i in r2_clip_count),
+                file=ROUT,
+            )
+            print(
+                "r2_nonclip_count=c(%s)"
+                % ",".join(str(i) for i in r2_nonclip_count),
+                file=ROUT,
+            )
+            print(
+                'plot(read_pos_r2, '
+                'r2_nonclip_count*100/(r2_clip_count+r2_nonclip_count),'
+                'col="blue",main="clipping profile",'
+                'xlab="Position of read (read-2)",'
+                'ylab="Non-clipped %",type="b")',
+                file=ROUT,
+            )
             print("dev.off()", file=ROUT)
-            
+
+        OUT.close()
+        ROUT.close()
+
     def insertion_profile(self,outfile, q_cut, PE, type="I"):
         '''calculate profile of insertion'''
         
@@ -3373,7 +3483,7 @@ class ParseBAM(object):
         else:print("Load SAM file ... ", end=' ', file=sys.stderr)
         
         cigar_str = ""
-        
+        max_len = 0
         #single end sequencing
         if PE is False:
             total_read = 0.0        
@@ -3387,7 +3497,7 @@ class ParseBAM(object):
                 
                     total_read +=1
                     cigar_str = bam_cigar.list2longstr(aligned_read.cigar)  # ([(0, 9), (4, 1)] ==> MMMMMMMMMS
-                    
+                    max_len = max(max_len, len(cigar_str))
                     if type not in cigar_str:   # no insertion
                         continue
                     if aligned_read.is_reverse:
@@ -3400,7 +3510,7 @@ class ParseBAM(object):
                 print("Done", file=sys.stderr)
             
             print("Totoal reads used: %d" % int(total_read), file=sys.stderr)
-            read_pos = list(range(0,len(cigar_str)))
+            read_pos = list(range(0, max_len))
             clip_count = []
             for i in read_pos:
                 print(str(i) + '\t' + str(soft_clip_profile[i]) + '\t' + str(total_read - soft_clip_profile[i]), file=OUT)
@@ -3432,6 +3542,7 @@ class ParseBAM(object):
                     if aligned_read.is_read2:
                         total_read2 += 1                                            
                     cigar_str = bam_cigar.list2longstr(aligned_read.cigar)  # ([(0, 9), (4, 1)] ==> MMMMMMMMMS
+                    max_len = max(max_len, len(cigar_str))
                     if aligned_read.is_reverse:
                         cigar_str = cigar_str[::-1]                 
                     
@@ -3449,8 +3560,7 @@ class ParseBAM(object):
             except StopIteration:
                 print("Done", file=sys.stderr)
             
-            
-            read_pos = list(range(0,len(cigar_str)))
+            read_pos = list(range(0, max_len))
             r1_clip_count = []
             r2_clip_count = []
             
@@ -3494,7 +3604,7 @@ class ParseBAM(object):
         ranges={}
         totalReads=0
         fragment_num=0      #splice reads will counted twice
-        rpkm={}
+        #rpkm={}
         
         #read SAM 
         if self.bam_format:print("Load BAM file ... ", end=' ', file=sys.stderr)
@@ -3523,7 +3633,7 @@ class ParseBAM(object):
 
         print("calculating coverage over gene body ...", file=sys.stderr)
         coverage=collections.defaultdict(int)
-        flag=0
+        #flag=0
         for line in open(refbed,'r'):
             try:
                 if line.startswith(('#','track','browser')):continue  
@@ -3531,8 +3641,8 @@ class ParseBAM(object):
                 fields = line.split()
                 chrom     = fields[0].upper()
                 tx_start  = int( fields[1] )
-                tx_end    = int( fields[2] )
-                geneName      = fields[3]
+                #tx_end    = int( fields[2] )
+                #geneName      = fields[3]
                 strand    = fields[5]
                 
                 exon_starts = list(map( int, fields[11].rstrip( ',\n' ).split( ',' ) ))
@@ -3545,7 +3655,7 @@ class ParseBAM(object):
             gene_all_base=[]
             percentile_base=[]
             mRNA_len =0
-            flag=0
+            #flag=0
             for st,end in zip(exon_starts,exon_ends):
                 gene_all_base.extend(list(range(st+1,end+1)))       #0-based coordinates on genome
                 mRNA_len = len(gene_all_base)
@@ -3591,7 +3701,7 @@ class ParseBAM(object):
         ranges[fchrom]=Intersecter()
         
         window_left_bound = list(range(low_bound,up_bound,step))
-        frag_size=0
+        #frag_size=0
         
         inner_distance_bitsets=BinnedBitSet()
         tmp = BinnedBitSet()
@@ -3782,7 +3892,7 @@ class ParseBAM(object):
                 continue
             chrom     = fields[0].upper()
             tx_start = int( fields[1] )
-            tx_end   = int( fields[2] )
+            #tx_end   = int( fields[2] )
             if int(fields[9] ==1):
                 continue        
             
@@ -3949,7 +4059,7 @@ class ParseBAM(object):
             chrom     = fields[0].upper()
             chrom_list.add(chrom)
             tx_start = int( fields[1] )
-            tx_end   = int( fields[2] )
+            #tx_end   = int( fields[2] )
             if int(fields[9] ==1):
                 continue        
             
@@ -4012,7 +4122,7 @@ class ParseBAM(object):
         tmp=list(range(sample_start,sample_end,sample_step))
         tmp.append(100)
         for pertl in tmp:   #[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95,100]
-            knownSpliceSites_num = 0
+            #knownSpliceSites_num = 0
             index_st = int(SR_num * ((pertl - sample_step)/100.0))
             index_end = int(SR_num * (pertl/100.0))
             if index_st < 0: index_st = 0
@@ -4071,7 +4181,7 @@ class ParseBAM(object):
         RAW_OUT = open(raw_file ,'w')
         
         ranges={}
-        totalReads=0
+        #totalReads=0
         cUR_num = 0 #number of fragements
         cUR_plus = 0
         cUR_minus = 0
@@ -4339,18 +4449,18 @@ class ParseBAM(object):
                 for i in random.sample(block_list_plus, int(cUR_plus * sample_percent)):
                     (chr,coord) = i.split(':')
                     if chr not in ranges_plus:ranges_plus[chr] = Intersecter()
-                    ranges_plus[chr].add_interval( Interval( int(coord), int(coord)+1 ) )                               
+                    ranges_plus[chr].add_interval( Interval( int(coord), int(coord)+1 ) )
                 
                 for i in random.sample(block_list_minus, int(cUR_minus * sample_percent)):
                     (chr,coord) = i.split(':')
-                    if chr not in ranges_minus:ranges_minus[chr] = Intersecter()                
-                    ranges_minus[chr].add_interval( Interval( int(coord), int(coord)+1 ) )                      
+                    if chr not in ranges_minus:ranges_minus[chr] = Intersecter()
+                    ranges_minus[chr].add_interval( Interval( int(coord), int(coord)+1 ) )
             
             else:
                 for i in random.sample(block_list,int(cUR_num * sample_percent)):
                     (chr,coord) = i.split(':')
-                    if chr not in ranges:ranges[chr] = Intersecter()                        
-                    ranges[chr].add_interval( Interval( int(coord), int(coord)+1 ) )                                                        
+                    if chr not in ranges:ranges[chr] = Intersecter()
+                    ranges[chr].add_interval( Interval( int(coord), int(coord)+1 ) )
 
             #========================= calculating RPKM based on sub-population
             print("assign reads to transcripts in " + refbed + ' ...', file=sys.stderr)
@@ -4425,7 +4535,7 @@ class ParseBAM(object):
         else:print("Process SAM file ... ", end=' ', file=sys.stderr)
         
         MD_pat =re.compile(r'(\d+)([A-Z]+)')
-        number_base = re.compile(r'([0-9]+)([A-Z]+)', re.I)
+        #number_base = re.compile(r'([0-9]+)([A-Z]+)', re.I)
         
         count = 0
         data = collections.defaultdict(dict)    # data[read_coord][genotype] = geno_type_number

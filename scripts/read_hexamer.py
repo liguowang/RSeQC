@@ -11,11 +11,12 @@ import argparse
 import sys
 from pathlib import Path
 from typing import Sequence
-
 from qcmodule import FrameKmer
+from importlib.metadata import version
 
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
+
 
 DESCRIPTION = (
     "Calculate normalized hexamer frequencies for one or more read files, "

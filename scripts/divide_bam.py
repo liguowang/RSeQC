@@ -18,9 +18,10 @@ from contextlib import ExitStack
 from pathlib import Path
 from typing import Sequence
 import pysam
+from importlib.metadata import version
 
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
 
 def build_parser() -> argparse.ArgumentParser:
     """Create and configure the command-line parser."""

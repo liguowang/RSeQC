@@ -1,17 +1,11 @@
-import timeit # module with timing subroutines                                                              
 import random # module to generate random numnbers                                                          
 from itertools import starmap
 from operator import mul
+from importlib.metadata import version
 
-
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__copyright__ = "Copyleft"
-__credits__ = []
-__license__ = "GPL"
-__version__="3.0.0"
-__maintainer__ = "Liguo Wang"
-__email__ = "wang.liguo@mayo.edu"
-__status__ = "Production"
+
 
 def v(N=50,min=-10,max=10):
     """Generates a random vector (in an array) of dimension N; the                                          

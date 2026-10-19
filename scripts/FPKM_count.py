@@ -16,9 +16,10 @@ from pathlib import Path
 from typing import Sequence
 from bx.intervals.intersection import Intersecter, Interval
 from qcmodule import SAM
+from importlib.metadata import version
 
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
 
 def build_parser() -> argparse.ArgumentParser:
     """Create the command-line parser without changing legacy semantics."""

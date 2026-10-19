@@ -1,3 +1,5 @@
+"""Setuptools compatibility shim for installing RSeQC command-line scripts."""
+
 from setuptools import setup
 
 

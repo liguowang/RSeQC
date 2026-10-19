@@ -11,15 +11,15 @@ import argparse
 import sys
 from pathlib import Path
 from typing import Callable, Sequence
-
 import numpy as np
 import pyBigWig
-
 from qcmodule import BED
 from qcmodule import twoList
+from importlib.metadata import version
 
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
+
 
 
 DESCRIPTION = (

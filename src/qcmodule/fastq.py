@@ -1,222 +1,331 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Aug  2 15:43:45 2020
+"""Utilities for reading FASTA/FASTQ files and generating sequence logos."""
 
-@author: m102324
-"""
-import sys
+from __future__ import annotations
+
 import collections
-import pandas as pd
+import logging
+import sys
+
 import logomaker
 import matplotlib.pyplot as plt
+import pandas as pd
 
-import logging
 from qcmodule import ireader
 
 
 def fasta_iter(infile):
-	"""
-	Generate seq or qual string.
+    """Yield sequence lines from a FASTA file.
 
-	Parameters
-	----------
-	infile : str
-		Input fasta file.
+    Parameters
+    ----------
+    infile : str
+        Input FASTA file.
 
-	Yields
-	------
-	str
-		String of nucleotides or quality scores.
-	"""
-	logging.info("Reading FASTA file \"%s\" ..." % infile)
-	for l in ireader.reader(infile):
-		l = l.strip()
-		if len(l) == 0:continue
-		if l.startswith('>'):continue
-		yield l
+    Yields
+    ------
+    str
+        Sequence lines.
+    """
+    logging.info('Reading FASTA file "%s" ...', infile)
+    for line in ireader.reader(infile):
+        line = line.strip()
+        if not line or line.startswith(">"):
+            continue
+        yield line
 
-def fastq_iter(infile, mode = 'seq'):
-	"""
-	Generate seq or qual string.
 
-	Parameters
-	----------
-	infile : str
-		Input fastq file.
-	mode : str
-		Must be 'seq' or 'qual'.
+def fastq_iter(infile, mode="seq"):
+    """Yield sequence or quality strings from a four-line FASTQ file.
 
-	Yields
-	------
-	str
-		String of nucleotides or quality scores.
-	"""
-	logging.info("Reading FASTQ file \"%s\" ..." % infile)
-	count = 0
-	s = ''
-	q = ''
-	for l in ireader.reader(infile):
-		l = l.strip()
-		if len(l) == 0:continue
-		count += 1
-		if count == 2:
-			s = l
-		if count == 4:
-			q = l
-			if mode == 'seq':
-				yield s
-			elif mode == 'qual':
-				yield q
-			count = 0
+    Parameters
+    ----------
+    infile : str
+        Input FASTQ file.
+    mode : {"seq", "qual"}
+        Select whether sequence or quality strings are yielded.
 
-def qual2countMat(q_obj,limit, step_size=100000):
-	"""
-	Generate count data frame.
+    Yields
+    ------
+    str
+        Sequence or quality string.
 
-	Parameters
-	----------
-	q_obj : iterable
-		Generator returned by fastq_iter
-	limit : int
-		Only read this many sequences.
-	step_size : int
-		Output progress report every step_size.
+    Raises
+    ------
+    ValueError
+        If ``mode`` is invalid or the FASTQ file contains an incomplete
+        four-line record.
+    """
+    if mode not in {"seq", "qual"}:
+        raise ValueError("mode must be 'seq' or 'qual'")
 
-	Return
-	------
-	Data frame
-	"""
-	dat = collections.defaultdict(dict)
-	count = 0
-	for qstr in q_obj:
-		count += 1
-		for i,q in enumerate(qstr):
-			q_score = ord(q) - 33
-			if q_score not in dat[i]:
-				dat[i][q_score] = 1
-			else:
-				dat[i][q_score] += 1
-		if count % step_size == 0:
-			print("%d quality sequences finished\r" % count, end=' ', file=sys.stderr)
-		if limit is not None:
-			if count >= limit:
-				break
+    logging.info('Reading FASTQ file "%s" ...', infile)
 
-	logging.info("%d quality sequences finished" % count)
+    record = []
+    for line in ireader.reader(infile):
+        # Do not discard blank lines here: FASTQ is record-oriented and
+        # silently skipping a line would shift all subsequent records.
+        record.append(line.rstrip("\r\n"))
 
-	logging.info("Make data frame from dict of dict ...")
-	qual_mat = pd.DataFrame.from_dict(dat)
+        if len(record) == 4:
+            header, seq, plus, qual = record
 
-	logging.info("Filling NA as zero ...")
-	qual_mat = qual_mat.fillna(0)
-	qual_mat.index.name='pos'
-	return qual_mat.T
+            if not header.startswith("@"):
+                raise ValueError(
+                    f"Invalid FASTQ record: header does not start with '@': {header!r}"
+                )
+            if not plus.startswith("+"):
+                raise ValueError(
+                    f"Invalid FASTQ record for {header!r}: third line does not start with '+'"
+                )
+            if len(seq) != len(qual):
+                raise ValueError(
+                    f"Invalid FASTQ record for {header!r}: sequence and quality "
+                    f"lengths differ ({len(seq)} != {len(qual)})"
+                )
 
-def seq2countMat(s_obj, limit, step_size=100000,exclude_N = False):
-	"""
-	Generate count data frame.
+            yield seq if mode == "seq" else qual
+            record = []
 
-	Parameters
-	----------
-	s_obj : iterable
-		Generator returned by fastq_iter or fasta_iter.
-	limit : int
-		Only read this many sequences.
-	step_size : int
-		Output progress report when step_size sequences have been processed.
-	exclude_N : bool
-		If True, sequences containing "N" will be skipped.
-	Return
-	------
-	Data frame
-	"""
-	mat = collections.defaultdict(dict)
-	count = 0
-	for s in s_obj:
-		count += 1
-		if (exclude_N is True) and "N" in s:
-			continue
-		for indx,base in enumerate(s):
-			if base not in mat[indx]:
-				mat[indx][base] = 1
-			else:
-				mat[indx][base] += 1
-		if count % step_size == 0:
-			print("%d sequences finished\r" % count, end=' ', file=sys.stderr)
-		if limit is not None:
-			if count >= limit:
-				break
-	logging.info("%d sequences finished" % count)
+    if record:
+        raise ValueError(
+            f"Incomplete FASTQ record at end of {infile!r}: "
+            f"found {len(record)} of 4 lines"
+        )
 
-	logging.info("Make data frame from dict of dict ...")
-	count_mat = pd.DataFrame.from_dict(mat)
 
-	logging.info("Filling NA as zero ...")
-	count_mat = count_mat.fillna(0)
-	count_mat.index.name='pos'
-	return count_mat.T
+def qual2countMat(q_obj, limit, step_size=100000):
+    """Generate a positional Phred-quality count data frame.
 
-def make_logo(mat, outfile, exclude_N=False, font_name='sans', stack_order='big_on_top', flip_below=True, shade_below=0.0, fade_below=0.0, highlight_start = 0, highlight_end = 15, oformat='pdf'):
-	"""
-	Call logomaker (https://github.com/jbkinney/logomaker) to make nucleotide logo.
+    Parameters
+    ----------
+    q_obj : iterable
+        Generator returned by ``fastq_iter``.
+    limit : int or None
+        Read at most this many quality strings. ``None`` means no limit.
+    step_size : int
+        Report progress every ``step_size`` records.
 
-	Parameters
-	----------
-	mat : data frame
-		Nucleotide frequencies table.
-	exclude_N : bool
-		If True, sequences containing "N" will be skipped.
-	font_name : str
-		The character font to use when rendering the logo.
-		run logomaker.list_font_names() to get a list of
-		valid font names.
-	stack_order : str
-		Must be 'big_on_top', 'small_on_top', or 'fixed'.
-		'big_on_top' : nucleotide with the highest frequency will be on top;
-		'small_on_top' : nucleotide with the lowest frequency will be on top;
-		'fixed' : nucleotides from top to bottom are in the same order as characters appear in the data frame.
-	flip_below : bool
-		If True, characters below the x-axis (which correspond to negative
-		values in the matrix) will be flipped upside down
-	shade_below : float
-		The amount of shading to use for characters drawn below the x-axis.
-		Must be in [0.0, 1.0]
-	fade_below : float
-		The amount of fading to use for characters drawn below the x-axis.
-		Must be in [0.0, 1.0]
-	highlight_start : int
-		Highlight logo from this position. Must be within [0, len(logo)-1].
-	highlight_end : int
-		Highlight logo to this position. Must be within [0, len(logo)-1].
-	"""
-	logging.info("Making logo ...")
-	logging.debug("Font name is: %s" % font_name)
-	logging.debug("Stack order is: %s" % stack_order)
-	logging.debug("Flip below flag: %s" % flip_below)
-	logging.debug("Shade below score: %f" % shade_below)
-	logging.debug("Fade below score: %f" % fade_below)
-	if exclude_N:
-		logging.info("'N' will be excluded.")
-		color = {'A':'green','C':'blue','G':'orange','T':'red'}
-	else:
-		logging.info("'N' will be kept.")
-		color = {'A':'green','C':'blue','G':'orange','T':'red','N':'grey'}
-	if (highlight_start is not None) and (highlight_end is not None):
-		if highlight_start < 0 or highlight_end < 0 or highlight_start > highlight_end:
-			logging.error("Incorrect highlight positions")
-			sys.exit(0)
-	logging.info("Mean-centered logo saved to \"%s\"." % (outfile + '.logo_mean_centered.' + oformat))
-	logo = logomaker.Logo(mat,center_values=True,color_scheme=color, font_name = font_name, stack_order = stack_order, flip_below = flip_below, shade_below = shade_below, fade_below = fade_below)
-	if isinstance(highlight_start, int) and isinstance(highlight_end, int):
-		logging.info("Highlight logo from %d to %d" % (highlight_start, highlight_end))
-		logo.highlight_position_range(pmin = highlight_start, pmax = highlight_end)
-	plt.savefig(outfile + '.logo.mean_centered.%s' % oformat.lower())
+    Returns
+    -------
+    pandas.DataFrame
+        Rows are read positions and columns are Phred scores.
+    """
+    if limit is not None and limit < 0:
+        raise ValueError("limit must be non-negative or None")
+    if step_size <= 0:
+        raise ValueError("step_size must be greater than zero")
 
-	logging.info("Logo saved to \"%s\"." % (outfile + '.logo.' + oformat))
-	logo = logomaker.Logo(mat,center_values=False,color_scheme=color, font_name = font_name, stack_order = stack_order, flip_below = flip_below, shade_below = shade_below, fade_below = fade_below)
-	if isinstance(highlight_start, int) and isinstance(highlight_end, int):
-		logging.info("Highlight logo from %d to %d" % (highlight_start, highlight_end))
-		logo.highlight_position_range(pmin = highlight_start, pmax = highlight_end)
-	plt.savefig(outfile + '.logo.%s' % oformat.lower())
+    dat = collections.defaultdict(dict)
+    count = 0
 
+    if limit == 0:
+        return pd.DataFrame()
+
+    for qstr in q_obj:
+        count += 1
+        for pos, char in enumerate(qstr):
+            q_score = ord(char) - 33
+            dat[pos][q_score] = dat[pos].get(q_score, 0) + 1
+
+        if count % step_size == 0:
+            print(
+                f"{count} quality sequences finished\r",
+                end=" ",
+                file=sys.stderr,
+            )
+        if limit is not None and count >= limit:
+            break
+
+    logging.info("%d quality sequences finished", count)
+    logging.info("Make data frame from dict of dict ...")
+    qual_mat = pd.DataFrame.from_dict(dat)
+    logging.info("Filling NA as zero ...")
+    qual_mat = qual_mat.fillna(0)
+    qual_mat.index.name = "pos"
+    return qual_mat.T
+
+
+def seq2countMat(s_obj, limit, step_size=100000, exclude_N=False):
+    """Generate a positional nucleotide-count data frame.
+
+    Parameters
+    ----------
+    s_obj : iterable
+        Generator returned by ``fastq_iter`` or ``fasta_iter``.
+    limit : int or None
+        Examine at most this many input sequences. ``None`` means no limit.
+    step_size : int
+        Report progress every ``step_size`` input sequences.
+    exclude_N : bool
+        If True, sequences containing uppercase or lowercase ``N`` are skipped
+        from the count matrix.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Rows are read positions and columns are observed bases.
+    """
+    if limit is not None and limit < 0:
+        raise ValueError("limit must be non-negative or None")
+    if step_size <= 0:
+        raise ValueError("step_size must be greater than zero")
+
+    mat = collections.defaultdict(dict)
+    count = 0
+
+    if limit == 0:
+        return pd.DataFrame()
+
+    for seq in s_obj:
+        count += 1
+
+        if not (exclude_N and "N" in seq.upper()):
+            for pos, base in enumerate(seq):
+                mat[pos][base] = mat[pos].get(base, 0) + 1
+
+        if count % step_size == 0:
+            print(f"{count} sequences finished\r", end=" ", file=sys.stderr)
+
+        # Keep the original interpretation of limit: number of input
+        # sequences examined, including sequences skipped by exclude_N.
+        if limit is not None and count >= limit:
+            break
+
+    logging.info("%d sequences finished", count)
+    logging.info("Make data frame from dict of dict ...")
+    count_mat = pd.DataFrame.from_dict(mat)
+    logging.info("Filling NA as zero ...")
+    count_mat = count_mat.fillna(0)
+    count_mat.index.name = "pos"
+    return count_mat.T
+
+
+def make_logo(
+    mat,
+    outfile,
+    exclude_N=False,
+    font_name="sans",
+    stack_order="big_on_top",
+    flip_below=True,
+    shade_below=0.0,
+    fade_below=0.0,
+    highlight_start=0,
+    highlight_end=15,
+    oformat="pdf",
+):
+    """Create mean-centered and standard nucleotide sequence logos.
+
+    Parameters
+    ----------
+    mat : pandas.DataFrame
+        Nucleotide frequencies table.
+    outfile : str
+        Output filename prefix.
+    exclude_N : bool
+        If True, use colors for A/C/G/T only.
+    font_name : str
+        Character font used by logomaker.
+    stack_order : {"big_on_top", "small_on_top", "fixed"}
+        Character stacking order.
+    flip_below : bool
+        Flip characters below the x-axis.
+    shade_below : float
+        Shading amount for characters below the x-axis, in [0, 1].
+    fade_below : float
+        Fading amount for characters below the x-axis, in [0, 1].
+    highlight_start, highlight_end : int or None
+        Inclusive positions to highlight. Set either to None to disable.
+    oformat : str
+        Matplotlib output format, for example ``pdf`` or ``png``.
+    """
+    if not 0.0 <= shade_below <= 1.0:
+        raise ValueError("shade_below must be between 0.0 and 1.0")
+    if not 0.0 <= fade_below <= 1.0:
+        raise ValueError("fade_below must be between 0.0 and 1.0")
+    if stack_order not in {"big_on_top", "small_on_top", "fixed"}:
+        raise ValueError(
+            "stack_order must be 'big_on_top', 'small_on_top', or 'fixed'"
+        )
+
+    highlight = highlight_start is not None and highlight_end is not None
+    if highlight:
+        if not isinstance(highlight_start, int) or not isinstance(highlight_end, int):
+            raise TypeError("highlight_start and highlight_end must be integers or None")
+        if highlight_start < 0 or highlight_end < 0 or highlight_start > highlight_end:
+            raise ValueError("Incorrect highlight positions")
+        if len(mat) and highlight_end >= len(mat):
+            raise ValueError(
+                f"highlight_end ({highlight_end}) is outside the logo "
+                f"range 0..{len(mat) - 1}"
+            )
+
+    logging.info("Making logo ...")
+    logging.debug("Font name is: %s", font_name)
+    logging.debug("Stack order is: %s", stack_order)
+    logging.debug("Flip below flag: %s", flip_below)
+    logging.debug("Shade below score: %f", shade_below)
+    logging.debug("Fade below score: %f", fade_below)
+
+    if exclude_N:
+        logging.info("'N' will be excluded.")
+        color = {"A": "green", "C": "blue", "G": "orange", "T": "red"}
+    else:
+        logging.info("'N' will be kept.")
+        color = {
+            "A": "green",
+            "C": "blue",
+            "G": "orange",
+            "T": "red",
+            "N": "grey",
+        }
+
+    fmt = oformat.lower()
+
+    mean_centered_file = f"{outfile}.logo.mean_centered.{fmt}"
+    logging.info('Mean-centered logo saved to "%s".', mean_centered_file)
+    fig, ax = plt.subplots()
+    logo = logomaker.Logo(
+        mat,
+        ax=ax,
+        center_values=True,
+        color_scheme=color,
+        font_name=font_name,
+        stack_order=stack_order,
+        flip_below=flip_below,
+        shade_below=shade_below,
+        fade_below=fade_below,
+    )
+    if highlight:
+        logging.info(
+            "Highlight logo from %d to %d", highlight_start, highlight_end
+        )
+        logo.highlight_position_range(
+            pmin=highlight_start, pmax=highlight_end
+        )
+    fig.savefig(mean_centered_file)
+    plt.close(fig)
+
+    logo_file = f"{outfile}.logo.{fmt}"
+    logging.info('Logo saved to "%s".', logo_file)
+    fig, ax = plt.subplots()
+    logo = logomaker.Logo(
+        mat,
+        ax=ax,
+        center_values=False,
+        color_scheme=color,
+        font_name=font_name,
+        stack_order=stack_order,
+        flip_below=flip_below,
+        shade_below=shade_below,
+        fade_below=fade_below,
+    )
+    if highlight:
+        logging.info(
+            "Highlight logo from %d to %d", highlight_start, highlight_end
+        )
+        logo.highlight_position_range(
+            pmin=highlight_start, pmax=highlight_end
+        )
+    fig.savefig(logo_file)
+    plt.close(fig)

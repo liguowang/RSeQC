@@ -21,17 +21,15 @@ import math
 import sys
 from pathlib import Path
 from typing import Iterator, Sequence
-
 import numpy as np
 import pysam
 from bx.intervals.intersection import Intersecter, Interval
-
 from qcmodule import BED
 from qcmodule import getBamFiles
+from importlib.metadata import version
 
-
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
 
 
 DESCRIPTION = (

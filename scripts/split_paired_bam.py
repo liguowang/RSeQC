@@ -21,12 +21,11 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
-
 import pysam
+from importlib.metadata import version
 
-
+__version__ = version("RSeQC")
 __author__ = "Liguo Wang"
-__version__ = "5.05"
 
 
 DESCRIPTION = (
